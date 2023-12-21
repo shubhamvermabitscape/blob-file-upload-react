@@ -18,7 +18,6 @@ const App = () => {
   const blobServiceClient = new BlobServiceClient(`https://${account}.blob.core.windows.net/?${sasToken}`);  // create a blobServiceClient
   const containerClient = blobServiceClient.getContainerClient(containerName);  // create a containerClient
 
-  //fetch all images
   const fetchImages = async () => {
     if (!account || !sasToken || !containerName) {  // check if the credentials are set
       alert('Please make sure you have set the Azure Storage credentials in the .env file');
@@ -26,13 +25,17 @@ const App = () => {
     }
     try {
       setLoading(true); // Turn on loading
-      const blobItems = containerClient.listBlobsFlat();  // get all blobs in the container     
+      const blobItems = containerClient.listBlobsFlat();  // get all blobs in the container  
+      console.log(blobItems);   
       const urls = [];
       for await (const blob of blobItems) {
-        const tempBlockBlobClient = containerClient.getBlockBlobClient(blob.name);  // get the blob url
+        const tempBlockBlobClient = containerClient.getBlockBlobClient(blob.name); 
+        console.log(blob.name); // get the blob url
+        console.log(tempBlockBlobClient);
         urls.push({ name: blob.name, url: tempBlockBlobClient.url });  // push the image name and url to the urls array
       }
       setImageUrls(urls);  // set the urls array to the imageUrls state
+      console.log(urls);
     } catch (error) {
       console.error(error);  // Handle error
     } finally {
@@ -48,14 +51,18 @@ const App = () => {
       return;
     }
     if (!account || !sasToken || !containerName) {  // check if the credentials are set
+      console.log(account, sasToken, containerClient);
       alert('Please make sure you have set the Azure Storage credentials in the .env file');
       return;
     }
     try {
       setLoading(true);
       const blobName = `${new Date().getTime()}-${file.name}`; // Specify a default blob name if needed
+      console.log(blobName);
       const blobClient = containerClient.getBlockBlobClient(blobName);  // get the blob client
+      console.log(blobClient);
       await blobClient.uploadData(file, { blobHTTPHeaders: { blobContentType: file.type } }); // upload the image
+      console.log(blobClient);
       await fetchImages();   // fetch all images again after the upload is completed
     } catch (error) {
       console.error(error);  // Handle error
@@ -122,6 +129,9 @@ const App = () => {
             )
           })
         )}
+      </div>
+      <div>
+        
       </div>
     </div>
   )
